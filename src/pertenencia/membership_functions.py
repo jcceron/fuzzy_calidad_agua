@@ -3,15 +3,73 @@ import numpy as np
 import pandas as pd
 import skfuzzy as fuzz
 
-# Diccionario de umbrales normativos (min, bajo, alto, max)
+# Tripletas [a, b, c] para Membership Functions (MFs) 'low', 'medium', 'high'
 normative_thresholds = {
-    'PH': [6.5, 6.5, 9.0, 9.0],
-    'Temp': [0.0, 25.0, 32.0, 32.0],                    # °C 
-    'DO(mg/L)': [0.0, 5.0, 10.0, 10.0],                 # mg/L
-    'Ammonia (mg L-1 )': [0.0, 0.0, 0.05, 0.05],        # mg NH₃–N/L
-    'Nitrite (mg L-1 )': [0.0, 0.0, 0.1, 0.1],          # mg NO₃–N/L
-    'Turbidity (cm)': [0.0, 0.0, 25.0, 25.0],           # NTU
-    'Alkalinity (mg L-1 )': [20.0, 60.0, 150.0, 150.0]  # mg CaCO₃/L
+    'Temp': {
+        'low':    [4.0, 15.0, 20.0],
+        'medium': [15.0, 25.0, 30.0],
+        'high':   [25.0, 30.0, 46.0]
+    },
+    'Turbidity (cm)': {
+        'low':    [0.0, 15.0, 30.0],
+        'medium': [15.0, 30.0, 60.0],
+        'high':   [30.0, 60.0, 100.0]
+    },
+    'DO(mg/L)': {
+        'low':    [0.0, 3.0, 5.0],
+        'medium': [3.0, 5.0, 7.0],
+        'high':   [5.0, 7.0, 10.0]
+    },
+    'BOD (mg/L)': {
+        'low':    [0.0, 1.0, 2.0],
+        'medium': [1.0, 2.0, 4.0],
+        'high':   [2.0, 4.0, 8.0]
+    },
+    'CO2': {
+        'low':    [0.2, 3.0, 5.0],
+        'medium': [3.0, 5.0, 8.0],
+        'high':   [5.0, 8.0, 13.0]
+    },
+    'PH': {
+        'low':    [4.0, 6.5, 7.5],
+        'medium': [6.5, 7.5, 8.5],
+        'high':   [7.5, 8.5, 12.5]
+    },
+    'Alkalinity (mg L-1 )': {
+        'low':    [25.0, 40.0, 75.0],
+        'medium': [40.0, 75.0, 150.0],
+        'high':   [75.0, 150.0, 271.0]
+    },
+    'Hardness (mg L-1 )': {
+        'low':    [50.0, 75.0, 100.0],
+        'medium': [75.0, 100.0, 200.0],
+        'high':   [100.0, 200.0, 302.0]
+    },
+    'Calcium (mg L-1 )': {
+        'low':    [20.0, 30.0, 60.0],
+        'medium': [30.0, 60.0, 120.0],
+        'high':   [60.0, 120.0, 253.0]
+    },
+    'Ammonia (mg L-1 )': {
+        'low':    [0.0, 0.005, 0.012],
+        'medium': [0.005, 0.012, 0.03],
+        'high':   [0.012, 0.03, 0.08]
+    },
+    'Nitrite (mg L-1 )': {
+        'low':    [0.0, 0.01, 0.1],
+        'medium': [0.01, 0.1, 1.0],
+        'high':   [0.1, 1.0, 2.9]
+    },
+    'Phosphorus (mg L-1 )': {
+        'low':    [0.0, 0.05, 0.5],
+        'medium': [0.05, 0.5, 2.0],
+        'high':   [0.5, 2.0, 4.9]
+    },
+    'H2S (mg L-1 )': {
+        'low':    [0.0, 0.005, 0.01],
+        'medium': [0.005, 0.01, 0.02],
+        'high':   [0.01, 0.02, 0.033]
+    }
 }
 
 def generate_universes(df: pd.DataFrame, feature_cols: list, n_points: int = 100) -> dict:
@@ -28,25 +86,21 @@ def generate_universes(df: pd.DataFrame, feature_cols: list, n_points: int = 100
 
 def create_mfs(universes: dict) -> dict:
     """
-    Genera funciones de pertenencia triangulares/trapezoidales usando umbrales normativos.
-    Para variables sin umbrales normativos, usa cuartiles.
+    Genera funciones de pertenencia triangulares usando los parámetros normativos.
     """
     mfs = {}
     for col, x in universes.items():
         if col in normative_thresholds:
-            mn, low, high, mx = normative_thresholds[col]
+            params = normative_thresholds[col]
             mfs[col] = {
-                'low':    fuzz.trimf(x, [mn, mn, low]),
-                'medium': fuzz.trapmf(x, [mn, low, high, mx]),
-                'high':   fuzz.trimf(x, [high, mx, mx])
+                'low':    fuzz.trimf(x, params['low']),
+                'medium': fuzz.trimf(x, params['medium']),
+                'high':   fuzz.trimf(x, params['high'])
             }
         else:
-            # Fallback cuartiles
-            Q1 = float(pd.Series(x).quantile(0.25))
-            Q2 = float(pd.Series(x).quantile(0.50))
-            Q3 = float(pd.Series(x).quantile(0.75))
-            min_v = float(x.min())
-            max_v = float(x.max())
+            # Fallback cuartiles (en caso de nuevas variables)
+            Q1, Q2, Q3 = np.percentile(x, [25, 50, 75])
+            min_v, max_v = x.min(), x.max()
             mfs[col] = {
                 'low':    fuzz.trimf(x, [min_v, min_v, Q1]),
                 'medium': fuzz.trimf(x, [Q1, Q2, Q3]),
