@@ -1,67 +1,73 @@
+# src/pertenencia/thresholds.py
 """
-Vértices iniciales (a, b, c, d) de las funciones de membresía
-para cada variable continua.  Se usan 3 MFs:
-  • 0 = 'Pobre'        (fuera del rango óptimo)
-  • 1 = 'Bueno'        (en el rango normativo)
-  • 2 = 'Excelente'    (centro del rango normativo)
-b-c coinciden en las MF triangulares (“Bueno” y “Excelente”).
-
-NOTA ▸ Los valores <--- *son una primera aproximación*; ajústalos
-a tu experiencia y vuelve a entrenar si quieres afinar la curva.
+Vertices (tripletas [a, b, c]) de las funciones de pertenencia para cada variable continua.
+Define las MFs 'low', 'medium' y 'high' de forma consistente con el módulo membership_functions.py.
 """
 
-import numpy as np
-# helper para triángulos
-def tri(a, b, c):              # devuelve [a,b,c] -> [a,b,b,c]
-    return [a, b, b, c]
-
-MF_VERTICES = {
-    #  pH ───────── 6.5-9.0 (óptimo ≈ 7.75)
-    "pH": np.array([
-        tri( 4.0,  5.0, 6.5),        # Pobre (bajo)
-        [6.5, 6.8, 9.0, 9.3],        # Bueno (trapecio ancho)
-        tri( 7.3, 7.75, 8.3),        # Excelente (pico al centro)
-    ], dtype="float32"),
-
-    #  Temperatura ───────── 25-32 °C (óptimo ≈ 28.5 °C)
-    "Temperatura": np.array([
-        tri(15, 22, 25),             # Pobre (fría)
-        [25, 26, 32, 34],            # Bueno
-        tri(27, 28.5, 30),           # Excelente
-    ], dtype="float32"),
-
-    #  Oxígeno disuelto (DO) ───────── ≥ 5 mg/L
-    "DO": np.array([
-        tri( 0, 2.5, 5),             # Pobre (bajo)
-        [5,  5.5, 12, 15],           # Bueno
-        tri( 7,  9,   11),           # Excelente (alto pero no exceso)
-    ], dtype="float32"),
-
-    #  Amoníaco no ionizado (UIA) ──── < 0.05 mg/L
-    "UIA": np.array([
-        tri(0.05, 0.08, 0.5),        # Pobre (alto)
-        [0.00, 0.00, 0.05, 0.06],    # Bueno (trapecio muy estrecho)
-        tri(0.00, 0.01, 0.02),       # Excelente
-    ], dtype="float32"),
-
-    #  Nitrato (NO3-N) ────────────── < 75 mg/L
-    "Nitrato": np.array([
-        tri(75, 100, 150),           # Pobre (alto)
-        [0, 0, 75, 90],              # Bueno
-        tri(10, 25, 40),             # Excelente
-    ], dtype="float32"),
-
-    #  Turbidez ───────────────────── ≤ 25 NTU
-    "Turbidez": np.array([
-        tri(25, 35, 60),             # Pobre
-        [0, 0, 25, 30],              # Bueno
-        tri( 0, 5, 12),              # Excelente
-    ], dtype="float32"),
-
-    #  Alcalinidad (CaCO₃) ────────── 60-150 mg/L (mín 20 mg/L)
-    "Alcalinidad": np.array([
-        tri(  0,  20,  60),          # Pobre (baja)
-        [ 60,  70, 150, 180],        # Bueno
-        tri( 80, 100, 120),          # Excelente (zona media)
-    ], dtype="float32"),
+normative_thresholds = {
+    'Temp': {
+        'low':    [4.0, 15.0, 20.0],
+        'medium': [15.0, 25.0, 30.0],
+        'high':   [25.0, 30.0, 46.0]
+    },
+    'Turbidity (cm)': {
+        'low':    [0.0, 15.0, 30.0],
+        'medium': [15.0, 30.0, 60.0],
+        'high':   [30.0, 60.0, 100.0]
+    },
+    'DO(mg/L)': {
+        'low':    [0.0, 3.0, 5.0],
+        'medium': [3.0, 5.0, 7.0],
+        'high':   [5.0, 7.0, 10.0]
+    },
+    'BOD (mg/L)': {
+        'low':    [0.0, 1.0, 2.0],
+        'medium': [1.0, 2.0, 4.0],
+        'high':   [2.0, 4.0, 8.0]
+    },
+    'CO2': {
+        'low':    [0.2, 3.0, 5.0],
+        'medium': [3.0, 5.0, 8.0],
+        'high':   [5.0, 8.0, 13.0]
+    },
+    'PH': {
+        'low':    [4.0, 6.5, 7.5],
+        'medium': [6.5, 7.5, 8.5],
+        'high':   [7.5, 8.5, 12.5]
+    },
+    'Alkalinity (mg L-1 )': {
+        'low':    [25.0, 40.0, 75.0],
+        'medium': [40.0, 75.0, 150.0],
+        'high':   [75.0, 150.0, 271.0]
+    },
+    'Hardness (mg L-1 )': {
+        'low':    [50.0, 75.0, 100.0],
+        'medium': [75.0, 100.0, 200.0],
+        'high':   [100.0, 200.0, 302.0]
+    },
+    'Calcium (mg L-1 )': {
+        'low':    [20.0, 30.0, 60.0],
+        'medium': [30.0, 60.0, 120.0],
+        'high':   [60.0, 120.0, 253.0]
+    },
+    'Ammonia (mg L-1 )': {
+        'low':    [0.0, 0.005, 0.012],
+        'medium': [0.005, 0.012, 0.03],
+        'high':   [0.012, 0.03, 0.08]
+    },
+    'Nitrite (mg L-1 )': {
+        'low':    [0.0, 0.01, 0.1],
+        'medium': [0.01, 0.1, 1.0],
+        'high':   [0.1, 1.0, 2.9]
+    },
+    'Phosphorus (mg L-1 )': {
+        'low':    [0.0, 0.05, 0.5],
+        'medium': [0.05, 0.5, 2.0],
+        'high':   [0.5, 2.0, 4.9]
+    },
+    'H2S (mg L-1 )': {
+        'low':    [0.0, 0.005, 0.01],
+        'medium': [0.005, 0.01, 0.02],
+        'high':   [0.01, 0.02, 0.033]
+    }
 }

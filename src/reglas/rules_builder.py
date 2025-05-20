@@ -85,6 +85,15 @@ def build_anfis_rules(antecedents: dict, consequent: Consequent) -> list:
     """
     rules = []
 
+    # R0: bajo por CO2 alto
+    rules.append(
+        Rule(
+            antecedents['CO2']['alto'],
+            consequent['Pobre'],
+            label='R0_CO2_high'
+        )
+    )
+
     # R1: Si DO es bajo O Ammonia es alto → Poor
     rules.append(
         Rule(
@@ -98,40 +107,41 @@ def build_anfis_rules(antecedents: dict, consequent: Consequent) -> list:
     # R2: Si pH está en rango medio Y DO está en rango medio → Good
     rules.append(
         Rule(
-            antecedents['PH']['medio'] &
-            antecedents['DO(mg/L)']['medio'],
-            consequent['Bueno'],
-            label='R2_PH_medium_and_DO_medium'
+            antecedents['Temp']['bajo'] &
+            antecedents['H2S (mg L-1 )']['alto'],
+            consequent['Pobre'],
+            label='R2_Temp_bajo_and_H2S_alto'
         )
     )
 
     # R3: Si pH es alto Y Turbidity es bajo → Excellent
     rules.append(
         Rule(
-            antecedents['PH']['alto'] &
+            antecedents['BOD (mg/L)']['alto'] &
             antecedents['Turbidity (cm)']['alto'],
-            consequent['Excelente'],
-            label='R3_PH_high_and_Turbidity_low'
+            consequent['Pobre'],
+            label='R3_BOD_high_and_Turbidity_alto'
         )
     )
 
     # R4: Si Alkalinity está en rango medio Y Temp en rango medio → Good
     rules.append(
         Rule(
-            antecedents['Alkalinity (mg L-1 )']['medio'] &
-            antecedents['Temp']['medio'],
+            antecedents['DO(mg/L)']['medio'] &
+            antecedents['Temp']['medio'] &
+            antecedents["Ammonia (mg L-1 )"]['alto'],
             consequent['Bueno'],
-            label='R4_Alk_medium_and_Temp_medium'
+            label='R4_DO_medium_and_Temp_medium_Amonia_alto'
         )
     )
 
     # R5: Si Nitrite es alto O Turbidity es alto → Poor
     rules.append(
         Rule(
-            antecedents['Nitrite (mg L-1 )']['alto'] |
-            antecedents['Turbidity (cm)']['alto'],
-            consequent['Pobre'],
-            label='R5_Nitrite_high_or_Turbidity_high'
+            antecedents['DO(mg/L)']['alto'] &
+            antecedents['Temp']['alto'],
+            consequent['Excelente'],
+            label='R5_DO_high_Temp_high'
         )
     )
 
