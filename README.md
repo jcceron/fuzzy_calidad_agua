@@ -12,22 +12,30 @@ Desarrollar e implementar un **sistema neuro-difuso (ANFIS)** que, a partir de p
 FUZZY_CALIDAD_AGUA/
 ├── data/
 │   ├── raw/              # Dataset original (Aquaculture – Water Quality)
-│   └── validacion/       # Conjuntos de validación y pruebas adicionales
+│   ├── validacion/       # Conjuntos de validación y pruebas adicionales
+│   └── processed/        # Conjuntos de datos procesados y winsorizados para consumo
 ├── env/                  # Entorno virtual Python (venv)
 │   ├── Include
 │   ├── Lib
 │   ├── Scripts
 │   └── pyvenv.cfg
+├── models/
+│   ├── anfis_tk.keras        # Modelo anfis keras
+│   └── scaler.pkl            # Datos escalados
 ├── notebooks/
-│   ├── 01_exploracion.ipynb     # Análisis exploratorio y visualización inicial
-│   └── 02_neurofuzzy.ipynb      # Prototipado y entrenamiento ANFIS
+│   ├── models/                        # Modelos generados en el proceso
+│   ├── 01_exploracion.ipynb           # Análisis exploratorio y visualización inicial
+│   ├── 02_prueba_fuzzy_clasico.ipynb  # Modelo de fuzzy clásico
+│   └── 03_comparativa ANSI y RF.ipynb  # Prototipado y entrenamiento ANFIS y RF
 ├── reports/
 │   └── figuras/                  # Gráficos de MFs, curvas de entrenamiento y resultados
 ├── src/
+│   ├── baseline/                # Modelo Random Forest de base
 │   ├── pertenencia/             # Definición de funciones de pertenencia (MFs)
 │   ├── reglas/                  # Generación de base de reglas difusas
 │   ├── simulacion/              # Configuración de ControlSystem y simulación
 │   ├── neurofuzzy/              # Implementación ANFIS (model.py, train.py, predict.py)
+│   ├── utils/                   # Preprocesamiento de datos
 │   └── metricas/                # Cálculo de fuzzy accuracy, FPI, RMSE y comparación con baseline
 ├── .gitignore                    # Ignorar env/, __pycache__/, etc.
 ├── requirements.txt             # Dependencias Python
@@ -86,26 +94,6 @@ FUZZY_CALIDAD_AGUA/
    python src/neurofuzzy/train.py --data data/raw/water_quality.csv --epochs 100
    ```
 
-### Evaluación y simulación
-
-1. Correr la simulación difusa estática:
-
-   ```bash
-   python src/simulacion/simulation.py --input data/validacion/sample.csv
-   ```
-
-2. Ejecutar inferencia ANFIS:
-
-   ```bash
-   python src/neurofuzzy/predict.py --model models/best_anfis.h5 --input data/validacion/sample.csv
-   ```
-
-3. Calcular métricas comparativas:
-
-   ```bash
-   python src/metricas/fuzzy_metrics.py --preds output/preds.csv --true data/validacion/labels.csv
-   ```
-
 ## Dependencias
 
 * Python 3.8+
@@ -127,6 +115,11 @@ FUZZY_CALIDAD_AGUA/
 5. ANZECC & ARMCANZ. (2000). **Australian and New Zealand Guidelines for Fresh and Marine Water Quality**.
 6. U.S. Environmental Protection Agency (EPA). **Water Quality Criteria**.
 
+## Autor
+
+* Juan Carlos Cerón Lombana
+* E-mail: juan.ceron@ustabuca.edu.co
+* Estudiante MADSI
 ---
 
 
